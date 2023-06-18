@@ -2,6 +2,7 @@ import ast
 
 def clean_data(df):
     df = df[df['votes'] >= 1000].reset_index(drop=True)
+    df = df[df['name'] != 'CafÃ\x83Â\x83Ã\x82Â\x83Ã\x83Â\x82Ã\x82Â\x83Ã\x83Â\x83Ã\x82Â\x82Ã\x83Â\x82Ã\x82Â© Felix'].reset_index(drop=True)
     print(f'Total no of records are {df.shape[0]}')
     df['rest_type'].fillna('', inplace=True)
     df['dish_liked'].fillna('', inplace=True)

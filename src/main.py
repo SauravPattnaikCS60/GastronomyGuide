@@ -10,11 +10,11 @@ import joblib
 from get_recommendations import depth_limited_search
 
 # Set page title and icon
-st.set_page_config(page_title="Foodie Finder", page_icon=":memo:", layout="wide")
+st.set_page_config(page_title="Gastronomy Guide", page_icon=":memo:", layout="wide")
 
 # Add a title text with white color and center align
 st.write(
-    f'<h1 style="color: white; text-align: center;">Foodie Finder</h1>',
+    f'<h1 style="color: white; text-align: center;">Gastronomy Guide</h1>',
     unsafe_allow_html=True
 )
 

@@ -4,7 +4,7 @@ from tqdm import tqdm
 restaurants_to_restaurants_score_mapper = {}
 recommendatation_model = {}
 
-def initialize_dictionary(restaurant1, restaurant2, distance_score, online_table_score, booking_table_score,
+def initialize_dictionary(restaurant1, restaurant2, distance_score, online_order_score, booking_table_score,
                           rating_score,
                           votes_score, type_of_restaurant_score, dishes_score, cuisines_score, approx_cost_score,
                           reviews_score,
@@ -16,7 +16,7 @@ def initialize_dictionary(restaurant1, restaurant2, distance_score, online_table
         restaurants_to_restaurants_score_mapper[restaurant1][restaurant2] = {}
 
     restaurants_to_restaurants_score_mapper[restaurant1][restaurant2]['distance_score'] = distance_score
-    restaurants_to_restaurants_score_mapper[restaurant1][restaurant2]['online_table_score'] = online_table_score
+    restaurants_to_restaurants_score_mapper[restaurant1][restaurant2]['online_order_score'] = online_order_score
     restaurants_to_restaurants_score_mapper[restaurant1][restaurant2]['booking_table_score'] = booking_table_score
     restaurants_to_restaurants_score_mapper[restaurant1][restaurant2]['rating_score'] = rating_score
     restaurants_to_restaurants_score_mapper[restaurant1][restaurant2]['votes_score'] = votes_score
@@ -36,14 +36,15 @@ def train_recommendation_model(df):
     tfidf = create_feature_vector_tfidf(df, 'agg_user_reviews')
     df['rate'] = df['rate'].apply(get_rating)
 
-    #df_sample = df.sample(n=100).reset_index(drop=True)
-
     for index1, row1 in tqdm(df.iterrows()):
         temporary_dictionary = {}
         restaurant1 = row1['name'] + ',' + row1['location']
         for index2, row2 in df.iloc[index1 + 1:].iterrows():
+            if row1['name'] == row2['name']:
+                continue  # passing same restaurants in different locations
+
             distance_score = haversine(row1['positioning_data'], row2['positioning_data'])
-            online_table_score = same_feature_check(row1['online_order'], row2['online_order'])
+            online_order_score = same_feature_check(row1['online_order'], row2['online_order'])
             booking_table_score = same_feature_check(row1['book_table'], row2['book_table'])
             rating_score = compute_closeness_score(row1['rate'], row2['rate'])
             votes_score = compute_closeness_score(row1['votes'], row2['votes'])
@@ -58,19 +59,19 @@ def train_recommendation_model(df):
 
             restaurant2 = row2['name'] + ',' + row2['location']
 
-            final_score = distance_score*0.05 + 0.05*online_table_score + 0.05*booking_table_score + 0.1*rating_score +\
-                          0.1*votes_score + 0.15*type_of_restaurant_score + 0.1*dishes_score + 0.2*cuisines_score +\
+            final_score = distance_score*0.05 + 0.05*online_order_score + 0.05*booking_table_score + 0.05*rating_score +\
+                          0.05*votes_score + 0.2*type_of_restaurant_score + 0.15*dishes_score + 0.2*cuisines_score +\
                           0.15*approx_cost_score + 0.05*reviews_score
 
             temporary_dictionary[restaurant2] = final_score
 
-            initialize_dictionary(restaurant1, restaurant2, distance_score, online_table_score, booking_table_score,
+            initialize_dictionary(restaurant1, restaurant2, distance_score, online_order_score, booking_table_score,
                                   rating_score,
                                   votes_score, type_of_restaurant_score, dishes_score, cuisines_score,
                                   approx_cost_score, reviews_score,
                                   final_score)
 
-            initialize_dictionary(restaurant2, restaurant1, distance_score, online_table_score, booking_table_score,
+            initialize_dictionary(restaurant2, restaurant1, distance_score, online_order_score, booking_table_score,
                                   rating_score,
                                   votes_score, type_of_restaurant_score, dishes_score, cuisines_score,
                                   approx_cost_score, reviews_score,
